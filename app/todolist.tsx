@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#565656',
     borderRadius: 20,
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

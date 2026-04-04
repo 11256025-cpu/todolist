@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   summaryLabel: { marginTop: 4, fontSize: 13, color: '#9CA3AF' },
   categoryList: { paddingHorizontal: 12, paddingBottom: 24 },
   cardContainer: {
-    marginHorizontal: 4,
+    marginHorizontal: 8,
     marginBottom: 16,
     flex: 1,
     position: 'relative',
