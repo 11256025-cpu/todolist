@@ -4,8 +4,8 @@ const TodoContext = createContext<any>(null);
 
 export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   const [categories, setCategories] = useState([
-    { id: '1', name: '提醒事項', icon: 'list', count: 0 },
-    { id: '2', name: '專案開發', icon: 'code-slash', count: 0 },
+    { id: '1', name: '提醒事項', icon: 'list', count: 0, color: '#4B7FF0' },
+    { id: '2', name: '專案開發', icon: 'code-slash', count: 0, color: '#10B981' },
   ]);
 
   const [todos, setTodos] = useState<Record<string, any[]>>({});

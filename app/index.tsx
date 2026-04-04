@@ -8,6 +8,8 @@ export default function HomeScreen() {
   const { categories, todos, trashItems, setCategories, setTodos, moveCategoryToTrash, deleteCategory } = useTodo();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [inputError, setInputError] = useState('');
+  const categoryColorOptions = ['#4B7FF0', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+  const [selectedColor, setSelectedColor] = useState(categoryColorOptions[0]);
   const totalTodos = Object.values(todos).flat().length;
   const completedTodos = Object.values(todos).flat().filter((t: any) => t.completed).length;
 
@@ -24,6 +26,7 @@ export default function HomeScreen() {
       name: trimmedName,
       icon: 'folder',
       count: 0,
+      color: selectedColor,
     };
 
     setCategories((prev: any) => [...prev, newCategory]);
@@ -101,6 +104,20 @@ export default function HomeScreen() {
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
+        <View style={styles.colorPaletteRow}>
+          {categoryColorOptions.map((color) => (
+            <TouchableOpacity
+              key={color}
+              style={[
+                styles.colorSwatch,
+                { backgroundColor: color },
+                selectedColor === color && styles.colorSwatchActive,
+              ]}
+              onPress={() => setSelectedColor(color)}
+              activeOpacity={0.8}
+            />
+          ))}
+        </View>
       </View>
 
       <FlatList
@@ -132,14 +149,14 @@ export default function HomeScreen() {
                 }}
               >
                 <View style={styles.categoryHeader}>
-                  <View style={styles.iconContainer}>
-                    <Ionicons name={item.icon as any} size={22} color="#4B7FF0" />
+                  <View style={[styles.iconContainer, { backgroundColor: item.color || '#E8EEFF' }]}> 
+                    <Ionicons name={item.icon as any} size={22} color="#FFFFFF" />
                   </View>
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{unfinishedCount}</Text>
+                  <View style={[styles.badge, { backgroundColor: (item.color || '#4B7FF0') + '22' }]}> 
+                    <Text style={[styles.badgeText, { color: item.color || '#4B7FF0' }]}>{unfinishedCount}</Text>
                   </View>
                 </View>
-                <Text style={styles.categoryName}>{item.name}</Text>
+                <Text style={[styles.categoryName, { color: item.color || '#111827' }]}>{item.name}</Text>
                 <Text style={styles.categoryDetail}>
                   {isTrash ? `${trashItems.length} 個已刪除` : `${listTodos.length} 項任務`}
                 </Text>
@@ -234,6 +251,21 @@ const styles = StyleSheet.create({
     marginTop: 18,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  colorPaletteRow: {
+    flexDirection: 'row',
+    marginTop: 14,
+  },
+  colorSwatch: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginRight: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  colorSwatchActive: {
+    borderColor: '#111827',
   },
   newFolderInput: {
     flex: 1,
