@@ -21,8 +21,15 @@ export default function RootLayout() {
           options={{ 
             headerBackTitle: '列表',
             headerTintColor: '#007AFF',
-            // 標題會由 todolist 頁面動態設定
           }} 
+        />
+        <Stack.Screen
+          name="trash"
+          options={{
+            title: '垃圾桶',
+            headerBackTitle: '列表',
+            headerTintColor: '#007AFF',
+          }}
         />
       </Stack>
     </TodoProvider>

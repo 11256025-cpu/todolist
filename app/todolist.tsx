@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, 
-  KeyboardAvoidingView, Platform, Alert 
+﻿import React, { useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  FlatList,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTodo } from '../context/TodoContext';
 
 export default function TodoListScreen() {
-  // 接收首頁傳遞過來的參數
   const { categoryId, categoryName } = useLocalSearchParams();
-  const { todos, setTodos } = useTodo();
-  
-  const [listTodos, setListTodos] = useState<any[]>(todos[categoryId as string] || []);
+  const { todos, setTodos, moveTodoToTrash } = useTodo();
+  const listTodos = todos[categoryId as string] || [];
   const [inputText, setInputText] = useState('');
   const [editItem, setEditItem] = useState<any>(null);
 
@@ -22,7 +27,6 @@ export default function TodoListScreen() {
   };
 
   const updateTodos = (newTodos: any[]) => {
-    setListTodos(newTodos);
     setTodos((prev: any) => ({ ...prev, [categoryId as string]: newTodos }));
   };
 
@@ -30,7 +34,7 @@ export default function TodoListScreen() {
     if (inputText.trim() === '') return;
 
     if (editItem) {
-      const updated = listTodos.map(t => t.id === editItem.id ? { ...t, text: inputText } : t);
+      const updated = listTodos.map(item => (item.id === editItem.id ? { ...item, text: inputText } : item));
       updateTodos(updated);
       setEditItem(null);
     } else {
@@ -38,27 +42,32 @@ export default function TodoListScreen() {
         id: Date.now().toString(),
         text: inputText,
         completed: false,
-        color: getRandomColor()
+        color: getRandomColor(),
       };
       updateTodos([...listTodos, newTodo]);
     }
+
     setInputText('');
   };
 
   const toggleComplete = (id: string) => {
-    const updated = listTodos.map(t => 
-      t.id === id ? { ...t, completed: !t.completed } : t
-    );
+    const updated = listTodos.map(item => (item.id === id ? { ...item, completed: !item.completed } : item));
     updateTodos(updated);
   };
 
-  const deleteTodo = (id: string) => {
-    Alert.alert('刪除', '確定要刪除這個待辦事項嗎？', [
+  const deleteTodo = (todo: any) => {
+    if (Platform.OS === 'web') {
+      moveTodoToTrash(todo, categoryId as string);
+      return;
+    }
+
+    Alert.alert('刪除提醒事項', '確定要將此項目移到垃圾桶嗎？', [
       { text: '取消', style: 'cancel' },
-      { text: '刪除', style: 'destructive', onPress: () => {
-        const updated = listTodos.filter(t => t.id !== id);
-        updateTodos(updated);
-      }},
+      {
+        text: '確定',
+        style: 'destructive',
+        onPress: () => moveTodoToTrash(todo, categoryId as string),
+      },
     ]);
   };
 
@@ -67,68 +76,120 @@ export default function TodoListScreen() {
     setInputText(item.text);
   };
 
+  const renderTodo = ({ item }: { item: any }) => (
+    <View style={styles.todoCard}>
+      <TouchableOpacity style={styles.todoLeft} onPress={() => toggleComplete(item.id)} activeOpacity={0.8}>
+        <View style={[styles.todoBullet, { backgroundColor: item.completed ? '#D1D1D6' : item.color }]}>
+          {item.completed && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
+        </View>
+        <View style={styles.todoTextWrapper}>
+          <Text style={[styles.todoText, item.completed && styles.todoCompleted]}>{item.text}</Text>
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.todoActions}>
+        <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(item)} activeOpacity={0.7}>
+          <Ionicons name="pencil-outline" size={18} color="#4B5563" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteButton} onPress={() => deleteTodo(item)} activeOpacity={0.7}>
+          <Ionicons name="trash-outline" size={20} color="#EF4444" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={90}
     >
-      {/* 動態設定上方導覽列的標題 */}
       <Stack.Screen options={{ title: categoryName as string }} />
+
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>{categoryName}</Text>
+          <Text style={styles.subtitle}>{listTodos.length} 個提醒事項</Text>
+        </View>
+      </View>
 
       <FlatList
         data={listTodos}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.todoItem}>
-            <TouchableOpacity onPress={() => toggleComplete(item.id)} style={styles.checkboxContainer}>
-              <Ionicons 
-                name={item.completed ? "checkmark-circle" : "ellipse-outline"} 
-                size={28} 
-                color={item.completed ? "#D1D1D6" : item.color} 
-              />
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.todoTextContainer} onPress={() => handleEdit(item)} onLongPress={() => deleteTodo(item.id)}>
-              <Text style={[styles.todoText, item.completed && styles.todoTextCompleted]}>
-                {item.text}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => deleteTodo(item.id)}>
-              <Ionicons name="trash-outline" size={22} color="#FF3B30" />
-            </TouchableOpacity>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.emptyText}>目前沒有待辦事項</Text>}
+        renderItem={renderTodo}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={<Text style={styles.emptyText}>目前沒有提醒事項，新增一個開始吧！</Text>}
+        showsVerticalScrollIndicator={false}
       />
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder={editItem ? "修改待辦事項..." : "新增待辦事項..."}
-          value={inputText}
-          onChangeText={setInputText}
-          onSubmitEditing={handleSaveTodo}
-        />
-        <TouchableOpacity style={styles.addButton} onPress={handleSaveTodo}>
-          <Text style={styles.addButtonText}>{editItem ? "儲存" : "新增"}</Text>
-        </TouchableOpacity>
+      <View style={styles.footer}>
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder={editItem ? '修改待辦事項...' : '新增待辦事項...'}
+            placeholderTextColor="#9CA3AF"
+            value={inputText}
+            onChangeText={setInputText}
+            returnKeyType="done"
+            onSubmitEditing={handleSaveTodo}
+          />
+          <TouchableOpacity style={styles.submitButton} onPress={handleSaveTodo} activeOpacity={0.85}>
+            <Ionicons name="add" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F2F2F7' },
-  todoItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 16, borderBottomWidth: 1, borderBottomColor: '#E5E5EA' },
-  checkboxContainer: { marginRight: 12 },
-  todoTextContainer: { flex: 1 },
-  todoText: { fontSize: 17, color: '#000' },
-  todoTextCompleted: { color: '#8E8E93', textDecorationLine: 'line-through' },
-  emptyText: { textAlign: 'center', marginTop: 50, color: '#8E8E93', fontSize: 16 },
-  inputContainer: { flexDirection: 'row', padding: 16, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#E5E5EA', alignItems: 'center' },
-  input: { flex: 1, height: 40, backgroundColor: '#F2F2F7', borderRadius: 10, paddingHorizontal: 12, fontSize: 16, marginRight: 12 },
-  addButton: { backgroundColor: '#007AFF', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 10 },
-  addButtonText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 }
+  container: { flex: 1, backgroundColor: '#F7F7F7' },
+  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16 },
+  title: { fontSize: 32, fontWeight: '800', color: '#111827' },
+  subtitle: { marginTop: 6, fontSize: 16, color: '#6B7280' },
+  listContent: { paddingHorizontal: 20, paddingBottom: 140 },
+  todoCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  todoLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  todoBullet: {
+    width: 30,
+    height: 30,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  todoTextWrapper: { flex: 1 },
+  todoText: { fontSize: 16, color: '#111827' },
+  todoCompleted: { color: '#9CA3AF', textDecorationLine: 'line-through' },
+  todoActions: { flexDirection: 'row', alignItems: 'center' },
+  editButton: { marginRight: 12, padding: 10, borderRadius: 14, backgroundColor: '#F3F4F6' },
+  deleteButton: { padding: 10, borderRadius: 14, backgroundColor: '#FEF2F2' },
+  emptyText: { textAlign: 'center', marginTop: 40, color: '#6B7280', fontSize: 16 },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    backgroundColor: '#F7F7F7',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 20, paddingVertical: 10, paddingHorizontal: 14, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  input: { flex: 1, fontSize: 16, color: '#111827', paddingVertical: 10, paddingHorizontal: 0 },
+  submitButton: { width: 52, height: 52, borderRadius: 18, backgroundColor: '#F97316', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
 });
