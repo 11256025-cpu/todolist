@@ -40,7 +40,15 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
 
   const moveTodoToTrash = (todo: any, categoryId?: string) => {
     const catId = categoryId || todo?.categoryId;
-    const trashedTodo = { ...todo, categoryId: catId, deletedAt: Date.now() };
+    const category = categories.find(c => c.id === catId);
+    const trashedTodo = {
+      ...todo,
+      categoryId: catId,
+      categoryName: category?.name,
+      categoryColor: category?.color,
+      categoryIcon: category?.icon,
+      deletedAt: Date.now()
+    };
     setTrashItems(prev => [trashedTodo, ...prev]);
     if (!catId) {
       // if categoryId cannot be determined, just remove from any matching lists
@@ -71,7 +79,14 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   const moveCategoryToTrash = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId);
     const items = todos[categoryId] || [];
-    const trashed = items.map((t: any) => ({ ...t, categoryId, categoryName: category?.name, deletedAt: Date.now() }));
+    const trashed = items.map((t: any) => ({
+      ...t,
+      categoryId,
+      categoryName: category?.name,
+      categoryColor: category?.color,
+      categoryIcon: category?.icon,
+      deletedAt: Date.now()
+    }));
 
     // add trashed todos
     setTrashItems(prev => [...trashed, ...prev]);
@@ -103,9 +118,35 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const restoreTodo = (todo: any) => {
+    // Check if category exists, if not, recreate it
+    setCategories((prev: any[]) => {
+      const existingCategory = prev.find(cat => cat.id === todo.categoryId);
+      if (existingCategory) {
+        // If category exists but is trashed, untrash it
+        if (existingCategory.trashed) {
+          return prev.map(cat => cat.id === todo.categoryId ? { ...cat, trashed: false } : cat);
+        }
+        return prev;
+      }
+      const newCategory = {
+        id: todo.categoryId,
+        name: todo.categoryName || '已恢復資料夾',
+        icon: todo.categoryIcon || 'folder',
+        count: 0,
+        color: todo.categoryColor || '#4B7FF0',
+      };
+      return [
+        ...prev,
+        newCategory,
+      ];
+    });
+
+    // Clean up trash-specific properties before restoring
+    const { deletedAt, categoryName, categoryColor, categoryIcon, ...cleanTodo } = todo;
+
     setTodos((prev: Record<string, any[]>) => ({
       ...prev,
-      [todo.categoryId]: [...(prev[todo.categoryId] || []), { ...todo, deletedAt: undefined }],
+      [todo.categoryId]: [...(prev[todo.categoryId] || []), cleanTodo],
     }));
     setTrashItems(prev => prev.filter(item => item.id !== todo.id));
   };
@@ -116,6 +157,8 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
 
   const emptyTrash = () => {
     setTrashItems([]);
+    // Also remove all trashed categories
+    setCategories(prev => prev.filter((cat: any) => !cat.trashed));
   };
 
   return (

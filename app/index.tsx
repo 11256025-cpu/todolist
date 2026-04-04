@@ -40,34 +40,22 @@ export default function HomeScreen() {
 
   const handleDeleteCategory = (categoryId: string, categoryName: string) => {
     if (Platform.OS === 'web') {
-      // For web: use confirm for permanent delete; cancel will move to trash
-      const permanently = window.confirm(`警告!!!   確定要永久刪除「${categoryName}」資料夾？按「確定」將永久刪除，資料則是移至最近刪除。`);
-      if (permanently) {
-        console.log('Permanently deleting category (web):', categoryId);
-        deleteCategory(categoryId);
-      } else {
-        console.log('Moving category to trash (web):', categoryId);
+      // For web: default to move to trash, confirm for permanent delete
+      const moveToTrash = window.confirm(`確定要將「${categoryName}」資料夾移到垃圾桶嗎？\n\n資料夾裡的待辦項目會移到垃圾桶，可以在垃圾桶中恢復。`);
+      if (moveToTrash) {
         moveCategoryToTrash(categoryId);
       }
       return;
     }
 
-    // On native: offer three-button alert: Cancel / Move to Trash / Delete Permanently
-    Alert.alert('刪除資料夾', `您想如何處理「${categoryName}」資料夾？`, [
+    // On native: offer two-button alert: Cancel / Move to Trash (default)
+    Alert.alert('刪除資料夾', `確定要將「${categoryName}」資料夾移到垃圾桶嗎？\n\n資料夾裡的待辦項目會移到垃圾桶，可以在垃圾桶中恢復。`, [
       { text: '取消', style: 'cancel' },
       {
         text: '移到垃圾桶',
-        onPress: () => {
-          console.log('Moving category to trash:', categoryId);
-          moveCategoryToTrash(categoryId);
-        },
-      },
-      {
-        text: '永久刪除',
         style: 'destructive',
         onPress: () => {
-          console.log('Permanently deleting category:', categoryId);
-          deleteCategory(categoryId);
+          moveCategoryToTrash(categoryId);
         },
       },
     ]);
@@ -143,7 +131,7 @@ export default function HomeScreen() {
       </View>
 
       <FlatList
-        data={[...categories, { id: 'trash', name: '垃圾桶', icon: 'trash', isTrash: true }]}
+        data={[...categories.filter((cat: any) => !cat.trashed), { id: 'trash', name: '垃圾桶', icon: 'trash', isTrash: true }]}
         keyExtractor={item => item.id}
         extraData={[categories, trashItems, todos]}
         renderItem={({ item }) => {

@@ -4,10 +4,13 @@ import { Alert, FlatList, Platform, Pressable, StyleSheet, Text, TouchableOpacit
 import { useTodo } from '../context/TodoContext';
 
 export default function TrashScreen() {
-  const { trashItems, restoreTodo, deleteTrashItem, emptyTrash, categories } = useTodo();
+  const { trashItems, restoreTodo, deleteTrashItem, emptyTrash, categories, restoreCategory } = useTodo();
 
-  const getCategoryName = (categoryId: string) => {
-    return categories.find((category: any) => category.id === categoryId)?.name || '已刪除分類';
+  const trashedCategories = categories.filter((cat: any) => cat.trashed);
+  const allTrashItems = [...trashItems, ...trashedCategories.map((cat: any) => ({ ...cat, isCategory: true }))];
+
+  const getCategoryName = (categoryId: string, categoryName?: string) => {
+    return categories.find((category: any) => category.id === categoryId)?.name || categoryName || '已刪除分類';
   };
 
   const showConfirm = (
@@ -68,30 +71,49 @@ export default function TrashScreen() {
       </View>
 
       <FlatList
-        data={trashItems}
+        data={allTrashItems}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>垃圾桶是空的</Text>
-            <Text style={styles.emptyText}>沒有任何已刪除的代辦事項。</Text>
+            <Text style={styles.emptyText}>沒有任何已刪除的代辦事項或資料夾。</Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <View style={styles.trashItem}>
-            <View style={[styles.colorDot, { backgroundColor: item.color || '#8B5CF6' }]} />
-            <View style={styles.trashTextContainer}>
-              <Text style={styles.trashTitle}>{item.text}</Text>
-              <Text style={styles.trashSubtitle}>{getCategoryName(item.categoryId)}</Text>
+        renderItem={({ item }) => {
+          const isCategory = item.isCategory;
+          return (
+            <View style={styles.trashItem}>
+              <View style={[styles.colorDot, { backgroundColor: isCategory ? item.color || '#8B5CF6' : item.color || '#D1D1D6' }]} />
+              <View style={styles.trashTextContainer}>
+                <Text style={styles.trashTitle}>{isCategory ? `📁 ${item.name}` : item.text}</Text>
+                <Text style={styles.trashSubtitle}>
+                  {isCategory ? '已刪除的資料夾' : getCategoryName(item.categoryId, item.categoryName)}
+                </Text>
+              </View>
+              <TouchableOpacity style={[styles.actionButton, styles.restoreButton]} onPress={() => {
+                if (isCategory) {
+                  restoreCategory(item.id);
+                } else {
+                  confirmRestore(item);
+                }
+              }} activeOpacity={0.7}>
+                <Ionicons name="arrow-undo-outline" size={20} color="#047857" />
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => {
+                if (isCategory) {
+                  showConfirm('永久刪除資料夾', '這個資料夾將無法恢復，確定要刪除嗎？', '刪除', () => {
+                    // 這裡可以添加永久刪除資料夾的邏輯
+                  });
+                } else {
+                  confirmDeletePermanent(item.id);
+                }
+              }} activeOpacity={0.7}>
+                <Ionicons name="trash-outline" size={20} color="#B91C1C" />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={[styles.actionButton, styles.restoreButton]} onPress={() => confirmRestore(item)} activeOpacity={0.7}>
-              <Ionicons name="arrow-undo-outline" size={20} color="#047857" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => confirmDeletePermanent(item.id)} activeOpacity={0.7}>
-              <Ionicons name="trash-outline" size={20} color="#B91C1C" />
-            </TouchableOpacity>
-          </View>
-        )}
+          );
+        }}
       />
     </View>
   );

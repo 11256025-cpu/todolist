@@ -1,19 +1,18 @@
-﻿import { useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import {
+    Alert,
+    FlatList,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { useTodo } from '../context/TodoContext';
 
 export default function HomeScreen() {
-  const { categories, todos, trashItems, setCategories, setTodos, deleteCategory } = useTodo();
+  const { categories, todos, trashItems, setCategories, setTodos, deleteCategory, moveCategoryToTrash } = useTodo();
   const totalTodos = Object.values(todos).flat().length;
   const completedTodos = Object.values(todos).flat().filter((t: any) => t.completed).length;
 
@@ -83,7 +82,7 @@ export default function HomeScreen() {
       <Text style={styles.sectionTitle}>我的列表</Text>
 
       <FlatList
-        data={categories}
+        data={categories.filter(cat => !cat.trashed)}
         keyExtractor={item => item.id}
         renderItem={({ item }) => {
           const listTodos = todos[item.id] || [];
@@ -103,9 +102,9 @@ export default function HomeScreen() {
               </View>
               <TouchableOpacity
                 onPress={() => {
-                  Alert.alert('刪除資料夾', `確定要刪除「${item.name}」資料夾，並移除所有包含的任務嗎？`, [
+                  Alert.alert('刪除資料夾', `確定要將「${item.name}」資料夾移到垃圾桶嗎？\n\n資料夾裡的待辦項目會移到垃圾桶，可以在垃圾桶中恢復。`, [
                     { text: '取消', style: 'cancel' },
-                    { text: '刪除', style: 'destructive', onPress: () => deleteCategory(item.id) },
+                    { text: '移到垃圾桶', style: 'destructive', onPress: () => moveCategoryToTrash(item.id) },
                   ]);
                 }}
                 style={styles.deleteCategoryButton}
