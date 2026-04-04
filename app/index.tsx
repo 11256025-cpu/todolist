@@ -33,7 +33,7 @@ export default function HomeScreen() {
   const handleDeleteCategory = (categoryId: string, categoryName: string) => {
     if (Platform.OS === 'web') {
       // For web: use confirm for permanent delete; cancel will move to trash
-      const permanently = window.confirm(`確定要永久刪除「${categoryName}」資料夾？按「確定」將永久刪除，按「取消」則移到垃圾桶。`);
+      const permanently = window.confirm(`確定要永久刪除「${categoryName}」資料夾？按「確定」將永久刪除。`);
       if (permanently) {
         console.log('Permanently deleting category (web):', categoryId);
         deleteCategory(categoryId);

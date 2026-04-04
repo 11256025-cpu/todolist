@@ -36,8 +36,8 @@ export default function TrashScreen() {
 
       <View style={styles.headerCardContent}>
         <View style={styles.headerTextBlock}>
-          <Text style={styles.title}>回收站</Text>
-          <Text style={styles.subtitle}>您可以在此恢復或永久刪除已刪除的待辦事項。</Text>
+          <Text style={styles.title}>最近刪除</Text>
+          <Text style={styles.subtitle}>提醒事項在此恢復或永久刪除已刪除的待辦事項。</Text>
         </View>
       </View>
 
@@ -59,7 +59,7 @@ export default function TrashScreen() {
         data={trashItems}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.emptyText}>垃圾桶目前是空的。</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>目前沒有最近刪除的代辦項目。</Text>}
         renderItem={({ item }) => (
           <View style={styles.trashItem}>
             <View style={[styles.colorDot, { backgroundColor: item.color || '#D1D1D6' }]} />
