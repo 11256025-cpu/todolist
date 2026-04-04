@@ -1,19 +1,19 @@
-﻿import React, { useState } from 'react';
+﻿import { Ionicons } from '@expo/vector-icons';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import React, { useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  FlatList,
-  Modal,
-  Pressable,
+    Alert,
+    FlatList,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTodo } from '../context/TodoContext';
 
 export default function TodoListScreen() {
@@ -170,13 +170,13 @@ export default function TodoListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F7F7' },
+  container: { flex: 1, backgroundColor: '#1D1D1D' },
   header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16 },
-  title: { fontSize: 32, fontWeight: '800', color: '#111827' },
-  subtitle: { marginTop: 6, fontSize: 16, color: '#6B7280' },
+  title: { fontSize: 32, fontWeight: '800', color: '#F8FAFC' },
+  subtitle: { marginTop: 6, fontSize: 16, color: '#9CA3AF' },
   listContent: { paddingHorizontal: 20, paddingBottom: 140 },
   todoCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#565656',
     borderRadius: 20,
     padding: 16,
     marginBottom: 14,
@@ -199,12 +199,12 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   todoTextWrapper: { flex: 1 },
-  todoText: { fontSize: 16, color: '#111827' },
-  todoCompleted: { color: '#9CA3AF', textDecorationLine: 'line-through' },
+  todoText: { fontSize: 16, color: '#F8FAFC' },
+  todoCompleted: { color: '#6B7280', textDecorationLine: 'line-through' },
   todoActions: { flexDirection: 'row', alignItems: 'center' },
-  editButton: { marginRight: 12, padding: 10, borderRadius: 14, backgroundColor: '#F3F4F6' },
-  deleteButton: { padding: 10, borderRadius: 14, backgroundColor: '#FEF2F2' },
-  emptyText: { textAlign: 'center', marginTop: 40, color: '#6B7280', fontSize: 16 },
+  editButton: { marginRight: 12, padding: 10, borderRadius: 14, backgroundColor: '#424242' },
+  deleteButton: { padding: 10, borderRadius: 14, backgroundColor: '#42222A' },
+  emptyText: { textAlign: 'center', marginTop: 40, color: '#9CA3AF', fontSize: 16 },
   footer: {
     position: 'absolute',
     left: 0,
@@ -212,20 +212,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 20,
     paddingVertical: 18,
-    backgroundColor: '#F7F7F7',
+    backgroundColor: '#1D1D1D',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: '#333333',
   },
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 20, paddingVertical: 10, paddingHorizontal: 14, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  input: { flex: 1, fontSize: 16, color: '#111827', paddingVertical: 10, paddingHorizontal: 0 },
-  submitButton: { width: 52, height: 52, borderRadius: 18, backgroundColor: '#F97316', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#565656', borderRadius: 20, paddingVertical: 10, paddingHorizontal: 14, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  input: { flex: 1, fontSize: 16, color: '#F8FAFC', paddingVertical: 10, paddingHorizontal: 0 },
+  submitButton: { width: 52, height: 52, borderRadius: 18, backgroundColor: '#EAA626', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { width: '100%', maxWidth: 560, backgroundColor: '#FFFFFF', borderRadius: 12, padding: 18 },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 10 },
-  modalInput: { backgroundColor: '#F3F4F6', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 16, color: '#111827', marginBottom: 14 },
+  modalContent: { width: '100%', maxWidth: 560, backgroundColor: '#565656', borderRadius: 12, padding: 18 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#F8FAFC', marginBottom: 10 },
+  modalInput: { backgroundColor: '#424242', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 16, color: '#F8FAFC', marginBottom: 14 },
   modalButtons: { flexDirection: 'row', justifyContent: 'flex-end' },
   modalButton: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, marginLeft: 10 },
-  modalCancel: { backgroundColor: '#F3F4F6' },
-  modalSave: { backgroundColor: '#2563EB' },
-  modalButtonText: { fontSize: 16, fontWeight: '700', color: '#111827' }
+  modalCancel: { backgroundColor: '#424242' },
+  modalSave: { backgroundColor: '#EAA626' },
+  modalButtonText: { fontSize: 16, fontWeight: '700', color: '#F8FAFC' }
 });
