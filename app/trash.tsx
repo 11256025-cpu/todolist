@@ -1,6 +1,6 @@
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Alert, Pressable } from 'react-native';
-import { Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
+import { Alert, FlatList, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTodo } from '../context/TodoContext';
 
 export default function TrashScreen() {
@@ -10,24 +10,37 @@ export default function TrashScreen() {
     return categories.find((category: any) => category.id === categoryId)?.name || '已刪除分類';
   };
 
+  const showConfirm = (
+    title: string,
+    message: string,
+    confirmText: string,
+    onConfirm: () => void
+  ) => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      if (window.confirm(`${title}\n\n${message}`)) {
+        onConfirm();
+      }
+      return;
+    }
+
+    Alert.alert(title, message, [
+      { text: '取消', style: 'cancel' },
+      { text: confirmText, style: 'destructive', onPress: onConfirm },
+    ]);
+  };
+
   const confirmRestore = (item: any) => {
     restoreTodo(item);
   };
 
   const confirmDeletePermanent = (id: string) => {
-    Alert.alert('永久刪除', '這個項目將無法恢復，確定要刪除嗎？', [
-      { text: '取消', style: 'cancel' },
-      { text: '刪除', style: 'destructive', onPress: () => deleteTrashItem(id) },
-    ]);
+    showConfirm('永久刪除', '這個項目將無法恢復，確定要刪除嗎？', '刪除', () => deleteTrashItem(id));
   };
 
   const handleEmptyTrash = () => {
     if (trashItems.length === 0) return;
 
-    Alert.alert('清空垃圾桶', '確定要永久刪除所有項目嗎？', [
-      { text: '取消', style: 'cancel' },
-      { text: '清空', style: 'destructive', onPress: () => emptyTrash() },
-    ]);
+    showConfirm('清空垃圾桶', '確定要永久刪除所有項目嗎？', '清空', emptyTrash);
   };
 
   return (

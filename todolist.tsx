@@ -1,17 +1,17 @@
-﻿import React, { useState } from 'react';
+﻿import { Ionicons } from '@expo/vector-icons';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import React, { useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  FlatList,
+    Alert,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTodo } from '../context/TodoContext';
 
 export default function TodoListScreen() {
@@ -123,6 +123,9 @@ export default function TodoListScreen() {
             <View style={styles.todoTextContainer}>
               <Text style={[styles.todoText, item.completed && styles.todoTextCompleted]}>{item.text}</Text>
             </View>
+            <TouchableOpacity onPress={() => handleEdit(item)} style={styles.editButton} activeOpacity={0.7}>
+              <Ionicons name="pencil-outline" size={20} color="#4B5563" />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => deleteTodo(item)} style={styles.trashButton} activeOpacity={0.7}>
               <Ionicons name="trash-outline" size={22} color="#EF4444" />
             </TouchableOpacity>
@@ -178,6 +181,7 @@ const styles = StyleSheet.create({
   todoTextContainer: { flex: 1 },
   todoText: { fontSize: 16, color: '#111827' },
   todoTextCompleted: { color: '#9CA3AF', textDecorationLine: 'line-through' },
+  editButton: { padding: 8, marginRight: 8, borderRadius: 12 },
   trashButton: { padding: 8, borderRadius: 12 },
   emptyText: { textAlign: 'center', marginTop: 50, color: '#6B7280', fontSize: 16 },
   fab: {
