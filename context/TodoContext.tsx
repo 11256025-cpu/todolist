@@ -3,40 +3,57 @@ import { Platform } from 'react-native';
 
 const TodoContext = createContext<any>(null);
 const STORAGE_KEY = 'TODOLIST_APP_STATE';
+const defaultCategories = [
+  { id: '1', name: '提醒事項', icon: 'list', count: 0, color: '#4B7FF0' },
+  { id: '2', name: '專案開發', icon: 'code-slash', count: 0, color: '#10B981' },
+];
 
 export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
-  const [categories, setCategories] = useState([
-    { id: '1', name: '提醒事項', icon: 'list', count: 0, color: '#4B7FF0' },
-    { id: '2', name: '專案開發', icon: 'code-slash', count: 0, color: '#10B981' },
-  ]);
-
-  const [todos, setTodos] = useState<Record<string, any[]>>({});
-  const [trashItems, setTrashItems] = useState<any[]>([]);
+  const isWeb = Platform.OS === 'web';
+  const [categories, setCategories] = useState<any[] | null>(isWeb ? null : defaultCategories);
+  const [todos, setTodos] = useState<Record<string, any[]> | null>(isWeb ? null : {});
+  const [trashItems, setTrashItems] = useState<any[] | null>(isWeb ? null : []);
+  const [isHydrated, setIsHydrated] = useState(!isWeb);
 
   useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    if (!isWeb || typeof window === 'undefined') return;
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed?.categories) setCategories(parsed.categories);
-        if (parsed?.todos) setTodos(parsed.todos);
-        if (parsed?.trashItems) setTrashItems(parsed.trashItems);
+        if (Array.isArray(parsed?.categories)) {
+          setCategories(parsed.categories);
+        } else {
+          setCategories(defaultCategories);
+        }
+        if (parsed?.todos && typeof parsed.todos === 'object') setTodos(parsed.todos);
+        else setTodos({});
+        if (parsed?.trashItems && Array.isArray(parsed.trashItems)) setTrashItems(parsed.trashItems);
+        else setTrashItems([]);
+      } else {
+        setCategories(defaultCategories);
+        setTodos({});
+        setTrashItems([]);
       }
     } catch (error) {
       console.warn('Failed to load saved todo state:', error);
+      setCategories(defaultCategories);
+      setTodos({});
+      setTrashItems([]);
+    } finally {
+      setIsHydrated(true);
     }
-  }, []);
+  }, [isWeb]);
 
   useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    if (!isHydrated || !isWeb) return;
     try {
       const savedState = JSON.stringify({ categories, todos, trashItems });
       window.localStorage.setItem(STORAGE_KEY, savedState);
     } catch (error) {
       console.warn('Failed to save todo state:', error);
     }
-  }, [categories, todos, trashItems]);
+  }, [isHydrated, isWeb, categories, todos, trashItems]);
 
   const moveTodoToTrash = (todo: any, categoryId?: string) => {
     const catId = categoryId || todo?.categoryId;
@@ -161,12 +178,16 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     setCategories(prev => prev.filter((cat: any) => !cat.trashed));
   };
 
+  if (isWeb && !isHydrated) {
+    return null;
+  }
+
   return (
     <TodoContext.Provider
       value={{
-        categories,
-        todos,
-        trashItems,
+        categories: categories || [],
+        todos: todos || {},
+        trashItems: trashItems || [],
         setTodos,
         setCategories,
         setTrashItems,
