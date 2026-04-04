@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 const TodoContext = createContext<any>(null);
+const STORAGE_KEY = 'TODOLIST_APP_STATE';
 
 export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
   const [categories, setCategories] = useState([
@@ -10,6 +12,31 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [todos, setTodos] = useState<Record<string, any[]>>({});
   const [trashItems, setTrashItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed?.categories) setCategories(parsed.categories);
+        if (parsed?.todos) setTodos(parsed.todos);
+        if (parsed?.trashItems) setTrashItems(parsed.trashItems);
+      }
+    } catch (error) {
+      console.warn('Failed to load saved todo state:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    try {
+      const savedState = JSON.stringify({ categories, todos, trashItems });
+      window.localStorage.setItem(STORAGE_KEY, savedState);
+    } catch (error) {
+      console.warn('Failed to save todo state:', error);
+    }
+  }, [categories, todos, trashItems]);
 
   const moveTodoToTrash = (todo: any, categoryId?: string) => {
     const catId = categoryId || todo?.categoryId;
