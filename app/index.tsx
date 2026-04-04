@@ -1,19 +1,20 @@
-﻿import { useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
+﻿import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { Alert, FlatList, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTodo } from '../context/TodoContext';
 
 export default function HomeScreen() {
   const { categories, todos, trashItems, setCategories, setTodos, moveCategoryToTrash, deleteCategory } = useTodo();
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [inputError, setInputError] = useState('');
   const totalTodos = Object.values(todos).flat().length;
   const completedTodos = Object.values(todos).flat().filter((t: any) => t.completed).length;
 
   const handleCreateCategory = () => {
     const trimmedName = newCategoryName.trim();
     if (!trimmedName) {
-      Alert.alert('名稱不可空白', '請輸入資料夾名稱');
+      setInputError('請輸入資料夾名稱');
       return;
     }
 
@@ -28,6 +29,7 @@ export default function HomeScreen() {
     setCategories((prev: any) => [...prev, newCategory]);
     setTodos((prev: any) => ({ ...prev, [newId]: [] }));
     setNewCategoryName('');
+    setInputError('');
   };
 
   const handleDeleteCategory = (categoryId: string, categoryName: string) => {
@@ -81,14 +83,20 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.newFolderRow}>
-          <TextInput
-            style={styles.newFolderInput}
-            placeholder="新增資料夾名稱"
-            value={newCategoryName}
-            onChangeText={setNewCategoryName}
-            returnKeyType="done"
-            onSubmitEditing={handleCreateCategory}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.newFolderInput, inputError ? styles.inputError : null]}
+              placeholder="新增資料夾名稱"
+              value={newCategoryName}
+              onChangeText={(text) => {
+                setNewCategoryName(text);
+                if (inputError) setInputError('');
+              }}
+              returnKeyType="done"
+              onSubmitEditing={handleCreateCategory}
+            />
+            {inputError ? <Text style={styles.errorText}>{inputError}</Text> : null}
+          </View>
           <TouchableOpacity style={styles.newFolderButton} onPress={handleCreateCategory} activeOpacity={0.85}>
             <Ionicons name="add" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -212,8 +220,8 @@ const styles = StyleSheet.create({
   categoryDetail: { fontSize: 14, color: '#6B7280', marginTop: 8 },
   deleteCategoryButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: 90,
+    right: 15,
     width: 40,
     height: 40,
     borderRadius: 12,
@@ -229,7 +237,7 @@ const styles = StyleSheet.create({
   },
   newFolderInput: {
     flex: 1,
-    height: 44,
+    height: 50,
     backgroundColor: '#F3F6FF',
     borderRadius: 14,
     paddingHorizontal: 16,
@@ -246,5 +254,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#2563EB',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  inputContainer: {
+    flex: 1,
+  },
+  inputError: {
+    borderColor: '#EF4444',
+    borderWidth: 1,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
