@@ -37,7 +37,7 @@ export default function TrashScreen() {
       <View style={styles.headerCardContent}>
         <View style={styles.headerTextBlock}>
           <Text style={styles.title}>最近刪除</Text>
-          <Text style={styles.subtitle}>提醒事項在此恢復或永久刪除已刪除的待辦事項。</Text>
+          <Text style={styles.subtitle}>代辦事項在此恢復或永久刪除已刪除的待辦事項。</Text>
         </View>
       </View>
 
