@@ -18,16 +18,13 @@ import { useTodo } from '../context/TodoContext';
 
 export default function TodoListScreen() {
   const { categoryId, categoryName } = useLocalSearchParams();
-  const { todos, setTodos, moveTodoToTrash } = useTodo();
+  const { todos, setTodos, moveTodoToTrash, categories } = useTodo();
   const listTodos: any[] = todos[categoryId as string] || [];
+  const category = categories.find((c: any) => c.id === categoryId);
+  const categoryColor = category?.color || '#4B7FF0';
   const [inputText, setInputText] = useState('');
   const [editItem, setEditItem] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-
-  const getRandomColor = () => {
-    const colors = ['#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#00C7BE', '#32ADE6', '#007AFF', '#5856D6', '#AF52DE', '#FF2D55'];
-    return colors[Math.floor(Math.random() * colors.length)];
-  };
 
   const updateTodos = (newTodos: any[]) => {
     setTodos((prev: any) => ({ ...prev, [categoryId as string]: newTodos }));
@@ -46,7 +43,7 @@ export default function TodoListScreen() {
         id: Date.now().toString(),
         text: inputText,
         completed: false,
-        color: getRandomColor(),
+        color: categoryColor,
       };
       updateTodos([...listTodos, newTodo]);
     }
@@ -84,7 +81,7 @@ export default function TodoListScreen() {
   const renderTodo = ({ item }: { item: any }) => (
     <View style={styles.todoCard}>
       <TouchableOpacity style={styles.todoLeft} onPress={() => toggleComplete(item.id)} activeOpacity={0.8}>
-        <View style={[styles.todoBullet, { backgroundColor: item.completed ? '#D1D1D6' : item.color }]}>
+        <View style={[styles.todoBullet, { backgroundColor: item.completed ? '#D1D1D6' : categoryColor }]}> 
           {item.completed && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
         </View>
         <View style={styles.todoTextWrapper}>
