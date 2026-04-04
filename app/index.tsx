@@ -1,11 +1,11 @@
 ﻿import { useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTodo } from '../context/TodoContext';
 
 export default function HomeScreen() {
-  const { categories, todos, trashItems, setCategories, setTodos, deleteCategory } = useTodo();
+  const { categories, todos, trashItems, setCategories, setTodos, moveCategoryToTrash, deleteCategory } = useTodo();
   const [newCategoryName, setNewCategoryName] = useState('');
   const totalTodos = Object.values(todos).flat().length;
   const completedTodos = Object.values(todos).flat().filter((t: any) => t.completed).length;
@@ -31,13 +31,34 @@ export default function HomeScreen() {
   };
 
   const handleDeleteCategory = (categoryId: string, categoryName: string) => {
-    Alert.alert('刪除資料夾', `確定要刪除「${categoryName}」資料夾，並移除所有包含的任務嗎？`, [
+    if (Platform.OS === 'web') {
+      // For web: use confirm for permanent delete; cancel will move to trash
+      const permanently = window.confirm(`確定要永久刪除「${categoryName}」資料夾？按「確定」將永久刪除，按「取消」則移到垃圾桶。`);
+      if (permanently) {
+        console.log('Permanently deleting category (web):', categoryId);
+        deleteCategory(categoryId);
+      } else {
+        console.log('Moving category to trash (web):', categoryId);
+        moveCategoryToTrash(categoryId);
+      }
+      return;
+    }
+
+    // On native: offer three-button alert: Cancel / Move to Trash / Delete Permanently
+    Alert.alert('刪除資料夾', `您想如何處理「${categoryName}」資料夾？`, [
       { text: '取消', style: 'cancel' },
       {
-        text: '刪除',
+        text: '移到垃圾桶',
+        onPress: () => {
+          console.log('Moving category to trash:', categoryId);
+          moveCategoryToTrash(categoryId);
+        },
+      },
+      {
+        text: '永久刪除',
         style: 'destructive',
         onPress: () => {
-          console.log('Deleting category:', categoryId);
+          console.log('Permanently deleting category:', categoryId);
           deleteCategory(categoryId);
         },
       },

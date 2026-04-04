@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
   View,
   FlatList,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,9 +19,10 @@ import { useTodo } from '../context/TodoContext';
 export default function TodoListScreen() {
   const { categoryId, categoryName } = useLocalSearchParams();
   const { todos, setTodos, moveTodoToTrash } = useTodo();
-  const listTodos = todos[categoryId as string] || [];
+  const listTodos: any[] = todos[categoryId as string] || [];
   const [inputText, setInputText] = useState('');
   const [editItem, setEditItem] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const getRandomColor = () => {
     const colors = ['#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#00C7BE', '#32ADE6', '#007AFF', '#5856D6', '#AF52DE', '#FF2D55'];
@@ -34,9 +37,10 @@ export default function TodoListScreen() {
     if (inputText.trim() === '') return;
 
     if (editItem) {
-      const updated = listTodos.map(item => (item.id === editItem.id ? { ...item, text: inputText } : item));
+      const updated = listTodos.map((item: any) => (item.id === editItem.id ? { ...item, text: inputText } : item));
       updateTodos(updated);
       setEditItem(null);
+      setShowEditModal(false);
     } else {
       const newTodo = {
         id: Date.now().toString(),
@@ -51,7 +55,7 @@ export default function TodoListScreen() {
   };
 
   const toggleComplete = (id: string) => {
-    const updated = listTodos.map(item => (item.id === id ? { ...item, completed: !item.completed } : item));
+  const updated = listTodos.map((item: any) => (item.id === id ? { ...item, completed: !item.completed } : item));
     updateTodos(updated);
   };
 
@@ -74,6 +78,7 @@ export default function TodoListScreen() {
   const handleEdit = (item: any) => {
     setEditItem(item);
     setInputText(item.text);
+    setShowEditModal(true);
   };
 
   const renderTodo = ({ item }: { item: any }) => (
@@ -121,6 +126,31 @@ export default function TodoListScreen() {
         ListEmptyComponent={<Text style={styles.emptyText}>目前沒有提醒事項，新增一個開始吧！</Text>}
         showsVerticalScrollIndicator={false}
       />
+
+      <Modal visible={showEditModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{editItem ? '編輯代辦' : '新增代辦'}</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={inputText}
+              onChangeText={setInputText}
+              placeholder="輸入代辦內容"
+              placeholderTextColor="#9CA3AF"
+              returnKeyType="done"
+              onSubmitEditing={handleSaveTodo}
+            />
+            <View style={styles.modalButtons}>
+              <Pressable style={[styles.modalButton, styles.modalCancel]} onPress={() => { setShowEditModal(false); setEditItem(null); setInputText(''); }}>
+                <Text style={styles.modalButtonText}>取消</Text>
+              </Pressable>
+              <Pressable style={[styles.modalButton, styles.modalSave]} onPress={handleSaveTodo}>
+                <Text style={[styles.modalButtonText, { color: '#fff' }]}>儲存</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <View style={styles.footer}>
         <View style={styles.inputWrapper}>
@@ -192,4 +222,13 @@ const styles = StyleSheet.create({
   inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 20, paddingVertical: 10, paddingHorizontal: 14, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   input: { flex: 1, fontSize: 16, color: '#111827', paddingVertical: 10, paddingHorizontal: 0 },
   submitButton: { width: 52, height: 52, borderRadius: 18, backgroundColor: '#F97316', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { width: '100%', maxWidth: 560, backgroundColor: '#FFFFFF', borderRadius: 12, padding: 18 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 10 },
+  modalInput: { backgroundColor: '#F3F4F6', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 16, color: '#111827', marginBottom: 14 },
+  modalButtons: { flexDirection: 'row', justifyContent: 'flex-end' },
+  modalButton: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, marginLeft: 10 },
+  modalCancel: { backgroundColor: '#F3F4F6' },
+  modalSave: { backgroundColor: '#2563EB' },
+  modalButtonText: { fontSize: 16, fontWeight: '700', color: '#111827' }
 });
