@@ -1,13 +1,14 @@
 ﻿import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, FlatList, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Modal, Platform, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTodo } from '../context/TodoContext';
 
 export default function HomeScreen() {
   const { categories, todos, trashItems, setCategories, setTodos, moveCategoryToTrash, deleteCategory } = useTodo();
   const [newCategoryName, setNewCategoryName] = useState('');
   const [inputError, setInputError] = useState('');
+  const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const categoryColorOptions = ['#4B7FF0', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
   const [selectedColor, setSelectedColor] = useState(categoryColorOptions[0]);
   const totalTodos = Object.values(todos).flat().length;
@@ -33,6 +34,8 @@ export default function HomeScreen() {
     setTodos((prev: any) => ({ ...prev, [newId]: [] }));
     setNewCategoryName('');
     setInputError('');
+    setSelectedColor(categoryColorOptions[0]);
+    setShowNewCategoryModal(false);
   };
 
   const handleDeleteCategory = (categoryId: string, categoryName: string) => {
@@ -86,38 +89,57 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.newFolderRow}>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[styles.newFolderInput, inputError ? styles.inputError : null]}
-              placeholder="新增資料夾名稱"
-              value={newCategoryName}
-              onChangeText={(text) => {
-                setNewCategoryName(text);
-                if (inputError) setInputError('');
-              }}
-              returnKeyType="done"
-              onSubmitEditing={handleCreateCategory}
-            />
-            {inputError ? <Text style={styles.errorText}>{inputError}</Text> : null}
-          </View>
-          <TouchableOpacity style={styles.newFolderButton} onPress={handleCreateCategory} activeOpacity={0.85}>
-            <Ionicons name="add" size={24} color="#FFFFFF" />
+          <TouchableOpacity style={styles.openModalButton} onPress={() => setShowNewCategoryModal(true)} activeOpacity={0.85}>
+            <Ionicons name="add" size={20} color="#FFFFFF" />
+            <Text style={styles.openModalButtonText}>新增資料夾</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.colorPaletteRow}>
-          {categoryColorOptions.map((color) => (
-            <TouchableOpacity
-              key={color}
-              style={[
-                styles.colorSwatch,
-                { backgroundColor: color },
-                selectedColor === color && styles.colorSwatchActive,
-              ]}
-              onPress={() => setSelectedColor(color)}
-              activeOpacity={0.8}
-            />
-          ))}
-        </View>
+
+        <Modal visible={showNewCategoryModal} animationType="slide" transparent onRequestClose={() => setShowNewCategoryModal(false)}>
+          <View style={styles.modalWrapper}>
+            <Pressable style={styles.modalOverlay} onPress={() => setShowNewCategoryModal(false)} />
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>新增資料夾</Text>
+              <Text style={styles.modalSubtitle}>輸入名稱並選擇資料夾顏色</Text>
+              <TextInput
+                style={[styles.modalInput, inputError ? styles.inputError : null]}
+                placeholder="資料夾名稱"
+                placeholderTextColor="#9CA3AF"
+                value={newCategoryName}
+                onChangeText={(text) => {
+                  setNewCategoryName(text);
+                  if (inputError) setInputError('');
+                }}
+                returnKeyType="done"
+                onSubmitEditing={handleCreateCategory}
+              />
+              {inputError ? <Text style={styles.errorText}>{inputError}</Text> : null}
+              <Text style={styles.modalLabel}>資料夾顏色</Text>
+              <View style={styles.colorPaletteRow}>
+                {categoryColorOptions.map((color) => (
+                  <TouchableOpacity
+                    key={color}
+                    style={[
+                      styles.colorSwatch,
+                      { backgroundColor: color },
+                      selectedColor === color && styles.colorSwatchActive,
+                    ]}
+                    onPress={() => setSelectedColor(color)}
+                    activeOpacity={0.8}
+                  />
+                ))}
+              </View>
+              <View style={styles.modalButtonRow}>
+                <TouchableOpacity style={[styles.modalButton, styles.modalCancel]} onPress={() => setShowNewCategoryModal(false)} activeOpacity={0.85}>
+                  <Text style={styles.modalCancelText}>取消</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.modalButton, styles.modalSubmit]} onPress={handleCreateCategory} activeOpacity={0.85}>
+                  <Text style={styles.modalSubmitText}>建立資料夾</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
 
       <FlatList
@@ -252,6 +274,105 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  openModalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2563EB',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 18,
+    shadowColor: '#2563EB',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  openModalButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  modalWrapper: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: -12 },
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 6,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 18,
+  },
+  modalInput: {
+    width: '100%',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#111827',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 10,
+  },
+  modalLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginBottom: 10,
+    fontWeight: '600',
+  },
+  modalButtonRow: {
+    marginTop: 22,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancel: {
+    backgroundColor: '#F3F4F6',
+    marginRight: 12,
+  },
+  modalSubmit: {
+    backgroundColor: '#2563EB',
+  },
+  modalCancelText: {
+    color: '#4B5563',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  modalSubmitText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
   colorPaletteRow: {
     flexDirection: 'row',
     marginTop: 14,
@@ -266,6 +387,8 @@ const styles = StyleSheet.create({
   },
   colorSwatchActive: {
     borderColor: '#111827',
+    width: 34,
+    height: 34,
   },
   newFolderInput: {
     flex: 1,

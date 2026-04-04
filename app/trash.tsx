@@ -48,43 +48,47 @@ export default function TrashScreen() {
       <Stack.Screen options={{ title: '垃圾桶' }} />
 
       <View style={styles.headerCardContent}>
-        <View style={styles.headerTextBlock}>
-          <Text style={styles.title}>最近刪除</Text>
-          <Text style={styles.subtitle}>代辦事項在此恢復或永久刪除已刪除的待辦事項。</Text>
+        <View style={styles.topBadge}>
+          <Text style={styles.topBadgeText}>垃圾桶</Text>
         </View>
-      </View>
+        <Text style={styles.title}>最近刪除</Text>
+        <Text style={styles.subtitle}>已刪除的代辦事項可以在此恢復或永久清除，保護你的工作清單不被誤刪。</Text>
 
-      {trashItems.length > 0 && (
-        <Pressable 
-          style={styles.clearButton} 
-          onPress={handleEmptyTrash}
-        >
-          {({ pressed }) => (
-            <View style={[styles.clearButtonContent, pressed && styles.clearButtonPressed]}>
-              <Ionicons name="trash-bin-outline" size={20} color="#DC2626" />
-              <Text style={styles.clearButtonText}>清空垃圾桶</Text>
+        {trashItems.length > 0 && (
+          <View style={styles.overviewRow}>
+            <View>
+              <Text style={styles.overviewCount}>{trashItems.length}</Text>
+              <Text style={styles.overviewLabel}>已刪除項目</Text>
             </View>
-          )}
-        </Pressable>
-      )}
+            <Pressable onPress={handleEmptyTrash} style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}>
+              <Text style={styles.clearButtonText}>清空垃圾桶</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
 
       <FlatList
         data={trashItems}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.emptyText}>目前沒有最近刪除的代辦項目。</Text>}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>垃圾桶是空的</Text>
+            <Text style={styles.emptyText}>沒有任何已刪除的代辦事項。</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={styles.trashItem}>
-            <View style={[styles.colorDot, { backgroundColor: item.color || '#D1D1D6' }]} />
+            <View style={[styles.colorDot, { backgroundColor: item.color || '#8B5CF6' }]} />
             <View style={styles.trashTextContainer}>
               <Text style={styles.trashTitle}>{item.text}</Text>
               <Text style={styles.trashSubtitle}>{getCategoryName(item.categoryId)}</Text>
             </View>
-            <TouchableOpacity style={styles.actionButton} onPress={() => confirmRestore(item)} activeOpacity={0.7}>
-              <Ionicons name="arrow-undo-outline" size={22} color="#10B981" />
+            <TouchableOpacity style={[styles.actionButton, styles.restoreButton]} onPress={() => confirmRestore(item)} activeOpacity={0.7}>
+              <Ionicons name="arrow-undo-outline" size={20} color="#047857" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => confirmDeletePermanent(item.id)} activeOpacity={0.7}>
-              <Ionicons name="trash-outline" size={22} color="#EF4444" />
+            <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => confirmDeletePermanent(item.id)} activeOpacity={0.7}>
+              <Ionicons name="trash-outline" size={20} color="#B91C1C" />
             </TouchableOpacity>
           </View>
         )}
@@ -94,66 +98,95 @@ export default function TrashScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#EEF2FF' },
+  container: { flex: 1, backgroundColor: '#F7F8FB' },
   headerCardContent: {
     margin: 16,
-    marginBottom: 0,
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    marginBottom: 8,
+    padding: 24,
+    borderRadius: 28,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
+    shadowOpacity: 0.08,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
   },
-  headerTextBlock: { flex: 1 },
-  title: { fontSize: 24, fontWeight: '800', color: '#0B1220', marginBottom: 6 },
-  subtitle: { fontSize: 14, color: '#6B7280', lineHeight: 20 },
-  clearButton: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-    overflow: 'hidden',
+  topBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginBottom: 14,
   },
-  clearButtonContent: {
+  topBadgeText: {
+    color: '#3730A3',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  title: { fontSize: 28, fontWeight: '900', color: '#111827', marginBottom: 10 },
+  subtitle: { fontSize: 15, color: '#6B7280', lineHeight: 22 },
+  overviewRow: {
+    marginTop: 22,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+  },
+  overviewCount: { fontSize: 32, fontWeight: '900', color: '#0F172A' },
+  overviewLabel: { fontSize: 13, color: '#64748B', marginTop: 4 },
+  clearButton: {
+    backgroundColor: '#FEE2E2',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
   },
   clearButtonPressed: {
-    backgroundColor: '#F5E6E6',
+    opacity: 0.85,
   },
-  clearButtonText: { color: '#DC2626', fontWeight: '700', fontSize: 16 },
-  listContent: { paddingHorizontal: 16, paddingBottom: 24 },
+  clearButtonText: { color: '#B91C1C', fontWeight: '700', fontSize: 14 },
+  listContent: { paddingHorizontal: 16, paddingBottom: 32, paddingTop: 8 },
+  emptyState: {
+    marginTop: 48,
+    marginHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  emptyTitle: { fontSize: 22, fontWeight: '800', color: '#0F172A', marginBottom: 10 },
+  emptyText: { textAlign: 'center', color: '#64748B', fontSize: 15, lineHeight: 22 },
   trashItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 14,
-    marginBottom: 12,
+    borderRadius: 22,
+    padding: 18,
+    marginBottom: 14,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
   },
-  colorDot: { width: 8, height: 48, borderRadius: 4, marginRight: 14 },
+  colorDot: { width: 10, height: 50, borderRadius: 6, marginRight: 16 },
   trashTextContainer: { flex: 1 },
-  trashTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 },
-  trashSubtitle: { fontSize: 13, color: '#6B7280' },
-  actionButton: { marginLeft: 12, padding: 8, borderRadius: 12 },
-  emptyText: { textAlign: 'center', marginTop: 48, color: '#6B7280', fontSize: 16 },
+  trashTitle: { fontSize: 17, fontWeight: '800', color: '#111827', marginBottom: 6 },
+  trashSubtitle: { fontSize: 13, color: '#64748B' },
+  actionButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
+  restoreButton: { backgroundColor: '#ECFDF5' },
+  deleteButton: { backgroundColor: '#FEE2E6' },
 });
