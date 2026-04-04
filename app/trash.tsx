@@ -4,7 +4,7 @@ import { Alert, FlatList, Platform, Pressable, StyleSheet, Text, TouchableOpacit
 import { useTodo } from '../context/TodoContext';
 
 export default function TrashScreen() {
-  const { trashItems, restoreTodo, deleteTrashItem, emptyTrash, categories, restoreCategory } = useTodo();
+  const { trashItems, restoreTodo, deleteTrashItem, emptyTrash, deleteTrashedCategory, categories, restoreCategory } = useTodo();
 
   const trashedCategories = categories.filter((cat: any) => cat.trashed);
   const allTrashItems = [...trashItems, ...trashedCategories.map((cat: any) => ({ ...cat, isCategory: true }))];
@@ -103,7 +103,7 @@ export default function TrashScreen() {
               <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => {
                 if (isCategory) {
                   showConfirm('永久刪除資料夾', '這個資料夾將無法恢復，確定要刪除嗎？', '刪除', () => {
-                    // 這裡可以添加永久刪除資料夾的邏輯
+                    deleteTrashedCategory(item.id);
                   });
                 } else {
                   confirmDeletePermanent(item.id);

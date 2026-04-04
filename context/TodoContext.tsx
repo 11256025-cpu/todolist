@@ -172,6 +172,15 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     setTrashItems(prev => prev.filter(item => item.id !== id));
   };
 
+  const deleteTrashedCategory = (categoryId: string) => {
+    setCategories(prev => prev.filter((cat: any) => cat.id !== categoryId));
+    setTodos((prev: Record<string, any[]>) => {
+      const { [categoryId]: removed, ...rest } = prev as Record<string, any[]>;
+      return rest;
+    });
+    setTrashItems(prev => prev.filter(item => item.categoryId !== categoryId));
+  };
+
   const emptyTrash = () => {
     setTrashItems([]);
     // Also remove all trashed categories
@@ -197,6 +206,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     restoreTodo,
         deleteCategory,
         deleteTrashItem,
+        deleteTrashedCategory,
         emptyTrash,
       }}
     >
