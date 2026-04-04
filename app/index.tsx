@@ -69,7 +69,6 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.headerCard}>
         <Text style={styles.title}>我的待辦清單</Text>
-        <Text style={styles.subtitle}>讓今天更有條理，快速查看各分類進度。</Text>
         <View style={styles.summaryRow}>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryValue}>{totalTodos}</Text>
