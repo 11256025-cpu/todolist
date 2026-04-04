@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
   },
-  emptyTitle: { fontSize: 22, fontWeight: '800', color: '#0F172A', marginBottom: 10 },
+  emptyTitle: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', marginBottom: 10 },
   emptyText: { textAlign: 'center', color: '#64748B', fontSize: 15, lineHeight: 22 },
   trashItem: {
     flexDirection: 'row',
