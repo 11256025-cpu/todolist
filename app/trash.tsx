@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, paddingBottom: 32, paddingTop: 8 },
   emptyState: {
     marginTop: 48,
-    marginHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+    marginHorizontal: 2,
+    backgroundColor: '#565656',
     borderRadius: 22,
     padding: 24,
     shadowColor: '#000',
