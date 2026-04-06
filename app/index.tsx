@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalCancel: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#6f6f6f',
     marginRight: 12,
   },
   modalSubmit: {
