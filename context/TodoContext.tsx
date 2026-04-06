@@ -57,7 +57,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
 
   const moveTodoToTrash = (todo: any, categoryId?: string) => {
     const catId = categoryId || todo?.categoryId;
-    const category = categories.find(c => c.id === catId);
+    const category = (categories || []).find(c => c.id === catId);
     const trashedTodo = {
       ...todo,
       categoryId: catId,
@@ -66,36 +66,36 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
       categoryIcon: category?.icon,
       deletedAt: Date.now()
     };
-    setTrashItems(prev => [trashedTodo, ...prev]);
+    setTrashItems(prev => [trashedTodo, ...(prev || [])]);
     if (!catId) {
       // if categoryId cannot be determined, just remove from any matching lists
-      setTodos((prev: Record<string, any[]>) => {
+      setTodos(prev => {
         const newPrev: Record<string, any[]> = {};
-        Object.keys(prev).forEach(key => {
-          newPrev[key] = prev[key].filter((item: any) => item.id !== todo.id);
+        Object.keys(prev || {}).forEach(key => {
+          newPrev[key] = (prev || {})[key].filter((item: any) => item.id !== todo.id);
         });
         return newPrev;
       });
       return;
     }
 
-    setTodos((prev: Record<string, any[]>) => ({
-      ...prev,
-      [catId]: (prev[catId] || []).filter((item: any) => item.id !== todo.id),
+    setTodos(prev => ({
+      ...(prev || {}),
+      [catId]: ((prev || {})[catId] || []).filter((item: any) => item.id !== todo.id),
     }));
   };
 
   const deleteCategory = (categoryId: string) => {
-    setCategories(prev => prev.filter(category => category.id !== categoryId));
-    setTodos((prev: Record<string, any[]>) => {
-      const { [categoryId]: removed, ...rest } = prev as Record<string, any[]>;
+    setCategories(prev => (prev || []).filter(category => category.id !== categoryId));
+    setTodos(prev => {
+      const { [categoryId]: removed, ...rest } = (prev || {}) as Record<string, any[]>;
       return rest;
     });
   };
 
   const moveCategoryToTrash = (categoryId: string) => {
-    const category = categories.find(c => c.id === categoryId);
-    const items = todos[categoryId] || [];
+    const category = (categories || []).find(c => c.id === categoryId);
+    const items = (todos || {})[categoryId] || [];
     const trashed = items.map((t: any) => ({
       ...t,
       categoryId,
@@ -106,44 +106,44 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     }));
 
     // add trashed todos
-    setTrashItems(prev => [...trashed, ...prev]);
+    setTrashItems(prev => [...trashed, ...(prev || [])]);
 
     // mark category as trashed but keep its entry so it can be restored later
-    setCategories(prev => prev.map(cat => (cat.id === categoryId ? { ...cat, trashed: true } : cat)));
+    setCategories(prev => (prev || []).map(cat => (cat.id === categoryId ? { ...cat, trashed: true } : cat)));
 
     // clear todos for the category so it doesn't show in active lists
-    setTodos((prev: Record<string, any[]>) => ({ ...prev, [categoryId]: [] }));
+    setTodos(prev => ({ ...(prev || {}), [categoryId]: [] }));
   };
 
   const restoreCategory = (categoryId: string) => {
     // unmark category
-    setCategories(prev => prev.map(cat => (cat.id === categoryId ? { ...cat, trashed: false } : cat)));
+    setCategories(prev => (prev || []).map(cat => (cat.id === categoryId ? { ...cat, trashed: false } : cat)));
 
     // move trashed items belonging to this category back to todos
-    setTodos((prev: Record<string, any[]>) => {
-      const restored = trashItems.filter(item => item.categoryId === categoryId).map(item => {
+    setTodos(prev => {
+      const restored = (trashItems || []).filter(item => item.categoryId === categoryId).map(item => {
         const copy = { ...item };
         delete copy.deletedAt;
         delete copy.categoryName;
         return copy;
       });
-      return { ...prev, [categoryId]: [...(prev[categoryId] || []), ...restored] };
+      return { ...(prev || {}), [categoryId]: [...((prev || {})[categoryId] || []), ...restored] };
     });
 
     // remove restored items from trash
-    setTrashItems(prev => prev.filter(item => item.categoryId !== categoryId));
+    setTrashItems(prev => (prev || []).filter(item => item.categoryId !== categoryId));
   };
 
   const restoreTodo = (todo: any) => {
     // Check if category exists, if not, recreate it
-    setCategories((prev: any[]) => {
-      const existingCategory = prev.find(cat => cat.id === todo.categoryId);
+    setCategories(prev => {
+      const existingCategory = (prev || []).find(cat => cat.id === todo.categoryId);
       if (existingCategory) {
         // If category exists but is trashed, untrash it
         if (existingCategory.trashed) {
-          return prev.map(cat => cat.id === todo.categoryId ? { ...cat, trashed: false } : cat);
+          return (prev || []).map(cat => cat.id === todo.categoryId ? { ...cat, trashed: false } : cat);
         }
-        return prev;
+        return prev || [];
       }
       const newCategory = {
         id: todo.categoryId,
@@ -153,7 +153,7 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
         color: todo.categoryColor || '#4B7FF0',
       };
       return [
-        ...prev,
+        ...(prev || []),
         newCategory,
       ];
     });
@@ -161,30 +161,30 @@ export const TodoProvider = ({ children }: { children: React.ReactNode }) => {
     // Clean up trash-specific properties before restoring
     const { deletedAt, categoryName, categoryColor, categoryIcon, ...cleanTodo } = todo;
 
-    setTodos((prev: Record<string, any[]>) => ({
-      ...prev,
-      [todo.categoryId]: [...(prev[todo.categoryId] || []), cleanTodo],
+    setTodos(prev => ({
+      ...(prev || {}),
+      [todo.categoryId]: [...((prev || {})[todo.categoryId] || []), cleanTodo],
     }));
-    setTrashItems(prev => prev.filter(item => item.id !== todo.id));
+    setTrashItems(prev => (prev || []).filter(item => item.id !== todo.id));
   };
 
   const deleteTrashItem = (id: string) => {
-    setTrashItems(prev => prev.filter(item => item.id !== id));
+    setTrashItems(prev => (prev || []).filter(item => item.id !== id));
   };
 
   const deleteTrashedCategory = (categoryId: string) => {
-    setCategories(prev => prev.filter((cat: any) => cat.id !== categoryId));
-    setTodos((prev: Record<string, any[]>) => {
-      const { [categoryId]: removed, ...rest } = prev as Record<string, any[]>;
+    setCategories(prev => (prev || []).filter((cat: any) => cat.id !== categoryId));
+    setTodos(prev => {
+      const { [categoryId]: removed, ...rest } = (prev || {}) as Record<string, any[]>;
       return rest;
     });
-    setTrashItems(prev => prev.filter(item => item.categoryId !== categoryId));
+    setTrashItems(prev => (prev || []).filter(item => item.categoryId !== categoryId));
   };
 
   const emptyTrash = () => {
     setTrashItems([]);
     // Also remove all trashed categories
-    setCategories(prev => prev.filter((cat: any) => !cat.trashed));
+    setCategories(prev => (prev || []).filter((cat: any) => !cat.trashed));
   };
 
   if (isWeb && !isHydrated) {
